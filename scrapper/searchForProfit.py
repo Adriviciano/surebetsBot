@@ -1,49 +1,40 @@
-def getProfit(sportium_str, juegging_str, sportium_dob_str, juegging_dob_str):
-    # Parsing of the strings
-    sportium_odds = {}
-    juegging_odds = {}
-    sportium_dob_odds = {}
-    juegging_dob_odds = {}
-    for key, value in [s.split(":") for s in sportium_str.split("/")]:
-        sportium_odds[key] = float(value)
-    for key, value in [s.split(":") for s in juegging_str.split("/")]:
-        juegging_odds[key] = float(value)
-    for key, value in [s.split(":") for s in sportium_dob_str.split("/")]:
-        sportium_dob_odds[key] = float(value)
-    for key, value in [s.split(":") for s in juegging_dob_str.split("/")]:
-        juegging_dob_odds[key] = float(value)
+def encontrar_surebet(cuotas_casa1, cuotas_casa2):
+    mejor_surebet = -1  # Inicializamos con un valor que indica que no hay surebet rentable
+    mejor_ganancia_esperada = 0  # Inicializamos con 0 ganancia esperada
+    mejor_valor_apuesta_casa1 = 0  # Inicializamos con 0 el valor de apuesta en Casa 1
+    mejor_valor_apuesta_casa2 = 0  # Inicializamos con 0 el valor de apuesta en Casa 2
 
-    # Calculation of surebets
-    surebets = {}
-    for option in [("1", "X2"), ("X", "12"), ("2", "1X")]:
-        op1, op2 = option
-        if op1 in sportium_odds and op2 in juegging_odds:
-            surebet_odds = 1/sportium_odds[op1] + 1/juegging_odds[op2]
-            surebets[op1 + "-" + op2] = surebet_odds
+    for i in range(len(cuotas_casa1)):
+        valor_apuesta_casa1 = cuotas_casa2[i] / (cuotas_casa1[i] + cuotas_casa2[i])  # Valor de apuesta en Casa 1
+        valor_apuesta_casa2 = cuotas_casa1[i] / (cuotas_casa1[i] + cuotas_casa2[i])  # Valor de apuesta en Casa 2
+        inversión_total = valor_apuesta_casa1 + valor_apuesta_casa2
 
-    # Calculation of profits
-    max_bet = 15
-    best_profit = 0
-    best_bet = ""
-    for bet, odds in surebets.items():
-        op1, op2 = bet.split("-")
-        if op1 in sportium_dob_odds and op2 in juegging_dob_odds:
-            odd1 = sportium_dob_odds[op1]
-            odd2 = juegging_dob_odds[op2]
-            bet1 = (max_bet * odd2) / (odd1 + odd2)
-            bet2 = max_bet - bet1
-            profit1 = bet1 * odd1 - max_bet
-            profit2 = bet2 * odd2 - max_bet
-            if 0 < profit1 and 0 < profit2 and bet1 <= max_bet and bet2 <= max_bet:
-                if profit1 > best_profit:
-                    best_profit = profit1
-                    best_bet = f"Apuesta {bet} en Sportium: {bet1:.2f} € y en Juegging: {bet2:.2f} €"
-                if profit2 > best_profit:
-                    best_profit = profit2
-                    best_bet = f"Apuesta {bet} en Juegging: {bet1:.2f} € y en Sportium: {bet2:.2f} €"
+        ganancia_casa1 = valor_apuesta_casa1 * cuotas_casa1[i] - inversión_total
+        ganancia_casa2 = valor_apuesta_casa2 * cuotas_casa2[i] - inversión_total
 
-    # Return of the result
-    if best_profit < 1:
-        return "No se ha encontrado una surebet rentable"
+        if ganancia_casa1 > 0 and ganancia_casa2 > 0:  # Si ambas apuestas son rentables
+            ganancia_esperada = (ganancia_casa1 + ganancia_casa2) / 2  # Ganancia esperada promedio
+            if ganancia_esperada > mejor_ganancia_esperada:
+                mejor_ganancia_esperada = ganancia_esperada
+                mejor_surebet = i
+                mejor_valor_apuesta_casa1 = valor_apuesta_casa1
+                mejor_valor_apuesta_casa2 = valor_apuesta_casa2
+
+    if mejor_surebet >= 0:
+        return [mejor_surebet, mejor_ganancia_esperada, mejor_valor_apuesta_casa1, mejor_valor_apuesta_casa2]
     else:
-        return best_bet
+        return []
+
+# Ejemplo de uso:
+cuotas_casa1 = [1.65]
+cuotas_casa2 = [2.15]
+resultado = encontrar_surebet(cuotas_casa1, cuotas_casa2)
+
+if resultado:
+    posicion_surebet, mejor_ganacia_esperada, valor_apuesta_casa1, valor_apuesta_casa2 = resultado
+    print(f"Surebet rentable en la posición {posicion_surebet}")
+    print(f"Ganancia esperada: {round(mejor_ganacia_esperada * 10, 2)}")
+    print(f"Valor de apuesta en Casa 1: {round(valor_apuesta_casa1 * 10, 2)}")
+    print(f"Valor de apuesta en Casa 2: {round(valor_apuesta_casa2 * 10, 2)}")
+else:
+    print("No hay surebets rentables.")

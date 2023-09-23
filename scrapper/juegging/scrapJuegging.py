@@ -18,4 +18,3 @@ def scrap(url):
     for match in matches_table.find_all('li', {'class': 'filtroCategoria'}):
         allInfo.append(getMatchInfo(match))
     return allInfo
-
