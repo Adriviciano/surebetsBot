@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-from getMatchInfo import getMatchInfo
+from juegging.getMatchInfo import getMatchInfo
 
 def scrap(url):
     allInfo=[]
